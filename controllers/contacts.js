@@ -1,15 +1,7 @@
 const mongodb = require('../db/connect');
 const ObjectId = require('mongodb').ObjectId;
 
-// These should probably go in a different file
-const genericErrorHandler = (error, res) => res.status(400).json({ error: error.message });
-const wrapAction = (action, errorHandler) => async (req, res) => {
-  try {
-    return await action(req, res);
-  } catch (error) {
-    errorHandler(error, res);
-  }
-};
+const { wrapActions } = require('./concerns/errorHandling');
 
 const getAll = async (req, res) => {
   const result = await mongodb.getDb().db().collection('contacts').find();
@@ -79,10 +71,10 @@ const deleteContact = async (req, res) => {
   }
 };
 
-module.exports = {
-  getAll: wrapAction(getAll, genericErrorHandler),
-  getSingle: wrapAction(getSingle, genericErrorHandler),
-  createContact: wrapAction(createContact, genericErrorHandler),
-  updateContact: wrapAction(updateContact, genericErrorHandler),
-  deleteContact: wrapAction(deleteContact, genericErrorHandler)
-};
+module.exports = wrapActions({
+  getAll,
+  getSingle,
+  createContact,
+  updateContact,
+  deleteContact
+});
